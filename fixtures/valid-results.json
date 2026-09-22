@@ -1,0 +1,92 @@
+{
+  "persona": {
+    "jobTitle": [
+      {
+        "value": "Marketing Manager",
+        "status": "stated",
+        "confidence": "high",
+        "evidence": [
+          {
+            "quote": "We mostly sell to marketing managers.",
+            "source": "input"
+          }
+        ]
+      }
+    ],
+    "department": [
+      {
+        "value": "Marketing",
+        "status": "inferred",
+        "confidence": "medium",
+        "reasoning": "Marketing managers typically belong to the marketing department."
+      }
+    ],
+    "companyType": [
+      {
+        "value": "SaaS",
+        "status": "stated",
+        "confidence": "high",
+        "evidence": [
+          {
+            "quote": "mid-size SaaS companies",
+            "source": "input"
+          }
+        ]
+      }
+    ],
+    "companySize": [
+      {
+        "value": "Mid-size",
+        "status": "stated",
+        "confidence": "high",
+        "evidence": [
+          {
+            "quote": "mid-size SaaS companies",
+            "source": "input"
+          }
+        ]
+      }
+    ],
+    "goals": [],
+    "challenges": [
+      {
+        "value": "Limited time",
+        "status": "stated",
+        "confidence": "high",
+        "evidence": [
+          {
+            "quote": "They're busy",
+            "source": "input"
+          }
+        ]
+      }
+    ],
+    "successMetrics": [],
+    "buyingTriggers": [],
+    "purchaseObjections": [
+      {
+        "value": "Lengthy sales process",
+        "status": "inferred",
+        "confidence": "medium",
+        "reasoning": "Prospect dislikes long sales calls."
+      }
+    ],
+    "decisionMakingRole": [],
+    "preferredChannels": []
+  },
+  "messaging": {
+    "valueProposition": [],
+    "keyMessages": [],
+    "proofPoints": [],
+    "contentIdeas": [],
+    "callToAction": []
+  },
+  "gaps": [
+    {
+      "field": "preferredChannels",
+      "reason": "Not mentioned in source notes."
+    }
+  ],
+  "conflicts": [],
+  "summary": "Marketing manager persona for a mid-size SaaS organization."
+}
