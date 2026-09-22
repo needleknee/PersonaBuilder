@@ -9,7 +9,7 @@ export { buildPersona } from "./buildPersona";
 export type { BuildPersonaOptions } from "./buildPersona";
 
 // LLM Provider abstraction
-export { MockProvider } from "./provider";
+export { MockProvider, LocalLLMProvider } from "./provider";
 export type { LLMProvider, ProviderConfig } from "./provider";
 
 // Prompt generation (for custom implementations)

@@ -10,7 +10,7 @@
  * 6. Return structured result
  */
 
-import { LLMProvider, MockProvider } from "./provider";
+import { LLMProvider, MockProvider, LocalLLMProvider } from "./provider";
 import { buildPrompt } from "./prompt";
 import { parseExtractedResponse } from "./parser";
 import { PersonaResult } from "../types/persona";
@@ -46,8 +46,23 @@ export async function buildPersona(
   // Step 3: Build prompt
   const prompt = buildPrompt(rawInput);
 
-  // Step 4: Call LLM
-  const llmResponse = await provider.generate(prompt);
+  // Step 4: Call LLM (with fallback to mock if local LLM unavailable)
+  let llmResponse: string;
+  try {
+    llmResponse = await provider.generate(prompt);
+  } catch (error) {
+    // If this is LocalLLMProvider and it failed, fall back to mock
+    if (provider.getName().includes("LocalLLM")) {
+      console.warn(
+        "⚠️  Local LLM connection failed, falling back to MockProvider\n",
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
+      const mockProvider = new MockProvider(options.mockFixtureMode || "sparse");
+      llmResponse = await mockProvider.generate(prompt);
+    } else {
+      throw error;
+    }
+  }
 
   // Step 5: Parse and normalize
   const result = parseExtractedResponse(llmResponse);
@@ -87,34 +102,41 @@ function validateInput(input: string): void {
 /**
  * Resolve LLM provider
  */
+/**
+ * Resolve LLM provider
+ */
 function resolveProvider(options: BuildPersonaOptions): LLMProvider {
   if (options.provider) {
     return options.provider;
   }
 
-  if (options.useMockProvider !== false) {
+  // If explicitly requesting mock provider, use it
+  if (options.useMockProvider === true) {
     return new MockProvider(options.mockFixtureMode || "sparse");
   }
 
-  // Try to use OpenAI or configured provider
-  const provider = createDefaultProvider();
-
-  if (!provider.isAvailable()) {
-    throw new Error(
-      "No LLM provider configured. Set OPENAI_API_KEY or provide a custom provider."
-    );
-  }
-
-  return provider;
+  // Default: try local LLM first, fall back to mock
+  return createDefaultProvider(options.useMockProvider);
 }
 
 /**
- * Create default provider (OpenAI if configured)
+ * Create default provider - try local LLM first, fall back to mock
  */
-function createDefaultProvider(): LLMProvider {
-  // For now, return mock provider as default
-  // In production, this would check for OPENAI_API_KEY and create OpenAIProvider
-  return new MockProvider("sparse");
+function createDefaultProvider(allowMockFallback?: boolean): LLMProvider {
+  // Try local LLM provider by default
+  try {
+    const localProvider = new LocalLLMProvider();
+    return localProvider;
+  } catch {
+    // If local LLM fails and mock is allowed, use it
+    if (allowMockFallback !== false) {
+      console.warn("⚠️  Local LLM unavailable, falling back to MockProvider");
+      return new MockProvider("sparse");
+    }
+    throw new Error(
+      "No LLM provider available. Start a local LLM (LM Studio or llama.cpp) at http://127.0.0.1:50305"
+    );
+  }
 }
 
 /**

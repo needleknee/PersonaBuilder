@@ -203,3 +203,77 @@ export class MockProvider implements LLMProvider {
     });
   }
 }
+
+/**
+ * Local LLM Provider
+ * 
+ * Communicates with a local LLM server (e.g., LM Studio, llama.cpp)
+ * via OpenAI-compatible API (default: http://127.0.0.1:50305)
+ */
+export class LocalLLMProvider implements LLMProvider {
+  private baseURL: string;
+  private model: string;
+  private timeout: number;
+
+  constructor(config?: ProviderConfig) {
+    this.baseURL = config?.baseURL || process.env.LOCAL_LLM_URL || "http://127.0.0.1:50305";
+    this.model = config?.model || "local-model";
+    this.timeout = config?.timeout || 300000; // 5 minute timeout
+  }
+
+  async generate(prompt: string): Promise<string> {
+    try {
+      const response = await fetch(`${this.baseURL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful assistant that extracts structured persona information from customer notes.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: 4000,
+        }),
+        signal: AbortSignal.timeout(this.timeout),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Local LLM responded with status ${response.status}`);
+      }
+
+      const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+      const content = data.choices?.[0]?.message?.content;
+
+      if (!content) {
+        throw new Error("No content in local LLM response");
+      }
+
+      return content;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`LocalLLMProvider error: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  isAvailable(): boolean {
+    // We can't easily check synchronously without making a request
+    // Return true and let generate() throw if unavailable
+    return true;
+  }
+
+  getName(): string {
+    return `LocalLLMProvider (${this.baseURL})`;
+  }
+}
