@@ -28,3 +28,12 @@ import {
   detectGaps,
   scoreConfidence,
 } from "../analysis";
+
+## Suggested processing order
+const evidenceChecked = attachVerifiedEvidence(rawInput, personaResult);
+
+const result = {
+  ...evidenceChecked,
+  gaps: detectGaps(evidenceChecked),
+  conflicts: detectConflicts(evidenceChecked),
+};
