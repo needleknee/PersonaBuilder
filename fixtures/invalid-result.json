@@ -1,0 +1,49 @@
+{
+  "persona": {
+    "jobTitle": [
+      {
+        "value": "Marketing Manager",
+        "status": "verified",
+        "confidence": "high"
+      }
+    ],
+    "department": [
+      {
+        "value": "Marketing",
+        "status": "inferred",
+        "confidence": "medium"
+      }
+    ],
+    "companyType": [
+      {
+        "value": "SaaS",
+        "status": "stated",
+        "confidence": "high"
+      }
+    ],
+    "companySize": [],
+    "goals": [],
+    "challenges": [],
+    "successMetrics": [],
+    "buyingTriggers": [],
+    "purchaseObjections": [],
+    "decisionMakingRole": [],
+    "preferredChannels": [
+      {
+        "value": "LinkedIn",
+        "status": "missing",
+        "confidence": "low"
+      }
+    ]
+  },
+  "messaging": {
+    "valueProposition": [],
+    "keyMessages": [],
+    "proofPoints": [],
+    "contentIdeas": [],
+    "callToAction": []
+  },
+  "gaps": [],
+  "conflicts": [],
+  "summary": "Invalid persona fixture."
+}
