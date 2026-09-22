@@ -1,73 +1,17 @@
+import type { PersonaResult as SchemaPersonaResult } from "../schema/personaSchema";
 
-/**
- * Temporary analysis contract, based on plan.md.
- *
- * Keep analysis files importing from "./types".
- * When Person 4's schema is merged, replace these definitions
- * with re-exports from "../schema".
- */
+export type PersonaResult = SchemaPersonaResult;
 
-export type FieldStatus =
-  | "stated"
-  | "inferred"
-  | "missing"
-  | "conflicting";
+export type Field =
+  PersonaResult["persona"]["jobTitle"][number];
 
-export type Confidence = "high" | "medium" | "low";
+export type Evidence =
+  NonNullable<Field["evidence"]>[number];
 
-export type Evidence = {
-  quote: string;
-  source: string;
-};
+export type FieldStatus = Field["status"];
 
-export type Field = {
-  value: string;
-  status: FieldStatus;
-  confidence: Confidence;
-  evidence?: Evidence[];
-  reasoning?: string;
-};
+export type Confidence = Field["confidence"];
 
-export type Gap = {
-  field: string;
-  reason: string;
-};
+export type Gap = PersonaResult["gaps"][number];
 
-export type Conflict = {
-  field: string;
-  competingClaims: Array<{
-    value: string;
-    source: string;
-  }>;
-};
-
-export type PersonaResult = {
-  persona: {
-    jobTitle: Field[];
-    department: Field[];
-    companyType: Field[];
-    companySize: Field[];
-    goals: Field[];
-    challenges: Field[];
-    successMetrics: Field[];
-    buyingTriggers: Field[];
-    purchaseObjections: Field[];
-    decisionMakingRole: Field[];
-    preferredChannels: Field[];
-  };
-
-  messaging: {
-    valueProposition: Field[];
-    keyMessages: Field[];
-    proofPoints: Field[];
-    contentIdeas: Field[];
-    callToAction: Field[];
-  };
-
-  buyingCommittee?: Field[];
-  funnelStage?: Field[];
-
-  gaps: Gap[];
-  conflicts: Conflict[];
-  summary: string;
-};
+export type Conflict = PersonaResult["conflicts"][number];
