@@ -436,15 +436,3 @@ function normalizeConfidenceMetrics(raw: RawExtractionResponse): {
 
   return { overall, statedPercentage, inferredPercentage, missingPercentage };
 }
-
-/**
- * Helper to normalize confidence scores
- */
-function normalizeConfidence(raw: RawExtractionResponse): {
-  overall: Confidence;
-  statedPercentage: number;
-  inferredPercentage: number;
-  missingPercentage: number;
-} {
-  return normalizeConfidenceMetrics(raw);
-}
