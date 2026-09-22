@@ -5,10 +5,12 @@
  */
 
 // Main entry point
-export { buildPersona, BuildPersonaOptions } from "./buildPersona";
+export { buildPersona } from "./buildPersona";
+export type { BuildPersonaOptions } from "./buildPersona";
 
 // LLM Provider abstraction
-export { LLMProvider, MockProvider, ProviderConfig } from "./provider";
+export { MockProvider } from "./provider";
+export type { LLMProvider, ProviderConfig } from "./provider";
 
 // Prompt generation (for custom implementations)
 export { buildPrompt, buildSimplifiedPrompt } from "./prompt";
