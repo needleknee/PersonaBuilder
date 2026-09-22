@@ -1,21 +1,45 @@
-# Persona Builder - Team Collaboration Plan
+# Persona Builder - B2B Marketing Persona Builder
 
 ## Goal
 
-Build an AI-powered Persona Builder that transforms messy customer notes into a structured, traceable, and shareable persona card.
+Build an AI-powered **B2B Marketing Persona Builder** that transforms messy customer notes into a structured, traceable, and shareable buyer persona card.
+
+The tool helps marketing teams answer:
+
+- Who are we targeting?
+- What business outcomes are they trying to achieve?
+- What challenges are preventing success?
+- What objections might they have?
+- What buying signals should we watch for?
+- How should we position our solution?
+- What messages are most likely to resonate?
+
+The prototype should support common marketing use cases:
+
+- Campaign planning
+- Content strategy
+- Product marketing
+- Demand generation
+- Sales enablement
+- Messaging development
+
+---
+
+# Challenge Success Criteria
 
 The solution must:
 
-- Accept plain-text input
-- Extract persona attributes
+- Accept plain-text notes
+- Extract persona information from messy input
 - Distinguish between:
   - Stated facts
   - AI inferences
   - Missing information
   - Conflicting information
-- Generate messaging guidance
-- Produce a visually structured persona card
-- Support repeated testing with multiple inputs
+- Generate actionable B2B marketing guidance
+- Produce a visually structured buyer persona card
+- Support repeated testing using multiple sample inputs
+- Clearly trace persona attributes back to source evidence
 
 ---
 
@@ -25,15 +49,16 @@ The goal is to maximize parallel work.
 
 Nobody should be blocked waiting for another team member.
 
-Every contributor should be productive within the first few minutes.
+Every contributor should be productive within minutes.
 
 To achieve this:
 
-- Freeze interfaces on Day 1
-- Use mock data everywhere
+- Freeze interfaces immediately
+- Use fixtures and mocks everywhere
 - Integrate late
 - Avoid shared ownership of files
-- Develop against fixtures, not live implementations
+- Keep pull requests small
+- Develop against stable contracts, not live implementations
 
 ---
 
@@ -56,14 +81,14 @@ src/components/Input/
 
 ### Responsibilities
 
-Build everything required to submit customer notes.
+Build everything required to submit customer notes and execute persona generation.
 
 ### Deliverables
 
-- Plain text input field
+- Text input area
 - Submit button
 - Reset button
-- Example selector
+- Sample input selector
 - Loading state
 - Error state
 
@@ -77,9 +102,9 @@ User can paste arbitrary notes.
 
 Provide buttons for:
 
-- Sparse input
-- Rich input
-- Conflicting input
+- Sparse Input
+- Rich Interview Input
+- Conflicting Input
 
 #### Validation
 
@@ -105,10 +130,11 @@ No dependency on AI implementation.
 
 ### Acceptance Criteria
 
-- User can enter text
+- User can enter notes
 - User can choose examples
-- Submit flow works with mock data
+- Submit works using mock data
 - Reset clears state
+- Input is passed unchanged to the processing layer
 
 ---
 
@@ -128,19 +154,23 @@ src/components/PersonaCard/
 
 ### Responsibilities
 
-Create the final persona presentation experience.
+Create the final B2B marketing persona presentation.
 
 ### Deliverables
 
-Sections for:
+Display sections for:
 
-- Archetype
-- Role
+- Job Title
+- Department
+- Company Type
+- Company Size
 - Goals
-- Pain Points
-- Objections
-- Preferred Channels
+- Challenges
+- Success Metrics
 - Buying Triggers
+- Purchase Objections
+- Decision-Making Role
+- Preferred Channels
 - Messaging Guidance
 - Gaps
 - Conflicts
@@ -156,7 +186,7 @@ MISSING
 CONFLICTING
 ```
 
-visually and consistently.
+consistently throughout the UI.
 
 ### Evidence Display
 
@@ -165,26 +195,29 @@ Allow users to inspect supporting evidence.
 Example:
 
 ```text
-Pain Point:
-"Dislikes lengthy sales processes"
+Challenge
 
-Evidence:
+Limited time for vendor evaluations
+
+Evidence
+
 "They're busy and hate long sales calls."
 ```
 
 ### Uses
 
-Static JSON fixture only.
+Static JSON fixtures only.
 
 No dependency on extraction engine.
 
 ### Acceptance Criteria
 
-- Renders a complete persona from fixture data
-- Displays all statuses
+- Renders complete persona from fixture data
 - Displays evidence
-- Handles long content safely
-- Has loading and error states
+- Displays status indicators
+- Handles long content gracefully
+- Provides loading and error states
+- Works on laptop-sized screens
 
 ---
 
@@ -204,7 +237,7 @@ src/agent/
 
 ### Responsibilities
 
-Convert raw text into structured persona data.
+Convert raw customer notes into structured B2B marketing personas.
 
 ### Deliverables
 
@@ -212,54 +245,52 @@ Convert raw text into structured persona data.
 buildPersona(rawInput: string): Promise<PersonaResult>
 ```
 
-### Responsibilities
+### Extract
 
-Extract:
-
-- Archetype
-- Role
-- Goals
-- Pain Points
-- Objections
-- Preferred Channels
+- Job Title
+- Department
+- Company Type
+- Company Size
+- Business Goals
+- Challenges
 - Buying Triggers
+- Purchase Objections
+- Preferred Channels
+- Decision-Making Role
+- Success Metrics
 
-Generate:
+### Generate
 
-- Messaging recommendations
-- Summary
+- Value Proposition
+- Key Messages
+- Proof Points
+- Content Ideas
+- Calls to Action
+- Executive Summary
 
-Identify:
+### Identify
 
 - Inferences
 - Gaps
 - Contradictions
+- Confidence levels
 
 ### Prompt Rules
 
 The model must:
 
-- Treat customer input as evidence
-- Never invent customers
+- Treat customer notes as evidence
+- Never invent people
 - Never invent companies
 - Never invent statistics
 - Label inferences clearly
-- Preserve ambiguity
-- Flag uncertainty
-
-### Required Output
-
-Must follow the shared contract exactly.
+- Preserve conflicts
+- Surface uncertainty
+- Flag missing information
 
 ### Uses
 
-Can develop entirely using:
-
-```text
-input -> JSON
-```
-
-tests.
+Fixture-based testing.
 
 No UI dependency.
 
@@ -267,17 +298,20 @@ No UI dependency.
 
 Sparse input should produce:
 
-- Multiple gaps
+- Several gaps
 - Limited inference
+- Strong evidence links
 
 Rich input should produce:
 
-- More complete persona
-- Strong evidence traceability
+- Detailed persona
+- Strong evidence coverage
+- Relevant messaging guidance
 
 Conflicting input should produce:
 
-- Visible conflict output
+- Explicit conflicts
+- No silent resolution
 
 ---
 
@@ -304,8 +338,8 @@ Define and validate the shared contract.
 - Runtime validation
 - Type definitions
 - Normalization utilities
+- Schema tests
 - JSON fixtures
-- Unit tests
 
 ### Required Validation Rules
 
@@ -333,29 +367,27 @@ invalid-result.json
 mock-result.json
 ```
 
-fixtures.
-
 ### Acceptance Criteria
 
-- Invalid status is rejected
-- Missing evidence fails validation
-- Invalid contract fails validation
-- Output becomes predictable for UI
+- Invalid status rejected
+- Missing evidence rejected
+- Invalid contract rejected
+- Output normalized for consumers
 
 ### Uses
 
-Only JSON fixtures.
+JSON fixtures only.
 
-No dependency on UI or AI.
+No UI or AI dependency.
 
 ---
 
-# Person 5 - Analysis Engine
+# Person 5 - Marketing Intelligence Layer
 
 ### Branch
 
 ```text
-feature-analysis-engine
+feature-marketing-analysis
 ```
 
 ### Owns
@@ -366,90 +398,145 @@ src/analysis/
 
 ### Responsibilities
 
-Build the trust layer.
-
-This is the feature that differentiates the solution from a typical AI-generated persona.
+Build the marketing-specific intelligence layer.
 
 ### Deliverables
 
-#### Evidence Processor
+#### Evidence Engine
 
-Associate findings with source text.
+Associate extracted findings with input evidence.
 
-#### Gap Detector
+#### Gap Detection
 
-Identify missing information.
+Identify missing persona information.
 
 Example:
 
 ```text
-Preferred Channels:
-Not present in input.
+Decision-Making Role
+
+Not present in the provided notes.
 ```
 
-#### Conflict Detector
+#### Conflict Detection
 
-Identify competing claims.
+Identify contradictions.
 
 Example:
 
 ```text
-Sales:
+Sales
+
 Enterprise buyer
 
-Growth:
-SMB buyer
+Marketing
+
+Mid-market buyer
 ```
 
-#### Confidence Helper
+#### Confidence Scoring
 
 Return:
 
 ```text
-high
-medium
-low
+High
+Medium
+Low
 ```
 
-confidence levels.
+#### Buying Committee Detection
+
+Identify likely role:
+
+```text
+Decision Maker
+Champion
+Influencer
+Evaluator
+Budget Owner
+```
+
+#### Funnel Stage Detection
+
+Identify likely buying stage:
+
+```text
+Problem Aware
+Solution Aware
+Vendor Evaluation
+Purchase Decision
+Customer
+```
+
+#### Content Preference Detection
+
+Detect evidence for:
+
+```text
+Blogs
+Webinars
+Case Studies
+Product Demos
+Peer Recommendations
+Analyst Reports
+```
 
 ### Acceptance Criteria
 
+- Evidence traceability works
+- Gaps are surfaced
 - Conflicts preserved
-- Missing information surfaced
-- Confidence calculated consistently
-- Evidence references available
+- Confidence generated consistently
+- Marketing-specific insights generated
 
 ### Uses
 
-Can be developed entirely from fixtures.
+Fixtures only.
 
-No dependency on AI or UI.
+No dependency on UI or AI.
 
 ---
 
 # Shared Contract (Frozen Day 1)
 
-Nobody changes this during the event.
+Nobody changes this without team agreement.
 
 ```typescript
 type PersonaResult = {
   persona: {
-    archetype: Field[];
-    role: Field[];
+    jobTitle: Field[];
+    department: Field[];
+    companyType: Field[];
+    companySize: Field[];
+
     goals: Field[];
-    painPoints: Field[];
-    objections: Field[];
-    preferredChannels: Field[];
+    challenges: Field[];
+
+    successMetrics: Field[];
+
     buyingTriggers: Field[];
+    purchaseObjections: Field[];
+
+    decisionMakingRole: Field[];
+
+    preferredChannels: Field[];
   };
 
   messaging: {
-    tone: Field[];
-    leadWith: Field[];
-    supportingPoints: Field[];
-    avoid: Field[];
+    valueProposition: Field[];
+
+    keyMessages: Field[];
+
+    proofPoints: Field[];
+
+    contentIdeas: Field[];
+
+    callToAction: Field[];
   };
+
+  buyingCommittee?: Field[];
+
+  funnelStage?: Field[];
 
   gaps: Gap[];
 
@@ -460,6 +547,7 @@ type PersonaResult = {
 
 type Field = {
   value: string;
+
   status:
     | "stated"
     | "inferred"
@@ -507,6 +595,7 @@ pages/
     Person 1
 
 components/
+
   Input/
     Person 1
 
@@ -526,9 +615,12 @@ analysis/
   conflicts.ts
   gaps.ts
   confidence.ts
+  funnelStage.ts
+  buyingCommittee.ts
     Person 5
 
 fixtures/
+
   sparse.txt
   rich.txt
   conflicting.txt
@@ -537,8 +629,6 @@ fixtures/
   invalid-result.json
   mock-result.json
 ```
-
-This structure minimizes merge conflicts.
 
 ---
 
@@ -552,15 +642,35 @@ They're busy, don't have big budgets,
 and hate long sales calls.
 ```
 
-Expected outcome:
+### Expected Outcome
 
-- Several gaps
-- Few inferences
-- Strong evidence links
+```text
+Job Title
+Marketing Manager
+
+Company Type
+SaaS
+
+Company Size
+Mid-size
+
+Challenges
+Limited time
+Budget constraints
+
+Objections
+Long sales cycles
+
+Gaps
+Decision-making role
+Success metrics
+Preferred channels
+Buying triggers
+```
 
 ---
 
-## Rich Input
+## Rich Interview Input
 
 ```text
 Jordan leads demand generation at a growing software company and is responsible for launching campaigns with a small team.
@@ -572,11 +682,27 @@ Jordan almost rejected our product because the first demo looked difficult to co
 They ultimately chose it after seeing that their team could turn existing interview notes into a usable campaign brief without additional research or a long onboarding project.
 ```
 
-Expected outcome:
+### Expected Outcome
 
-- Rich persona
-- Strong evidence
-- Few gaps
+```text
+Role
+Demand Generation Manager
+
+Goal
+Launch campaigns faster
+
+Challenge
+Manual work transferring insights
+
+Buying Trigger
+Campaign efficiency
+
+Objection
+Complex onboarding
+
+Success Metric
+Faster campaign execution
+```
 
 ---
 
@@ -590,11 +716,23 @@ Growth:
 Our ideal customer is a small or mid-size business with a lean marketing team that can buy and adopt tools quickly.
 ```
 
-Expected outcome:
+### Expected Outcome
 
-- Visible conflict section
-- No silent resolution
-- Both positions preserved
+```text
+Conflict Detected
+
+Claim 1
+Enterprise marketing organization
+
+Claim 2
+SMB / Mid-market marketing team
+
+Status
+Conflicting
+
+Resolution
+Not enough evidence to determine the correct segment
+```
 
 ---
 
@@ -604,15 +742,13 @@ Expected outcome:
 
 Everyone starts immediately.
 
-No waiting.
-
 No integration.
 
 Use fixtures and mocks.
 
 ---
 
-## Phase 2 - Shared Contract Merge
+## Phase 2 - Shared Artifacts
 
 Merge only:
 
@@ -625,7 +761,7 @@ These become the source of truth.
 
 ---
 
-## Phase 3 - Wiring
+## Phase 3 - Integration
 
 Connect components.
 
@@ -634,9 +770,9 @@ Input UI
     ↓
 buildPersona()
     ↓
-Validation
+Schema Validation
     ↓
-Analysis
+Marketing Analysis
     ↓
 Persona Card
 ```
@@ -647,10 +783,10 @@ Persona Card
 
 Improve:
 
-- Visual design
+- Visual hierarchy
 - Prompt quality
-- Export options
 - Error handling
+- Export capabilities
 
 ---
 
@@ -661,18 +797,18 @@ Improve:
 - Create GitHub issues
 - Assign owners
 - Freeze schema
-- Confirm tech stack
+- Confirm stack
 - Confirm AI provider
 
 ---
 
-## Next 60–90 Minutes
+## Next 60-90 Minutes
 
-Everyone works independently.
+Parallel development.
 
-No integration required.
+No dependencies.
 
-Use mocks and fixtures.
+Use mocks.
 
 ---
 
@@ -682,57 +818,62 @@ Merge:
 
 - Schema
 - Fixtures
-- UI
-- Agent
 - Analysis
+- AI extraction
+- UI
 
-Run all three test inputs.
+Run all test cases.
 
 ---
 
 ## Final 15 Minutes
 
 - Demo rehearsal
-- Fix blockers only
-- Final merge
+- Bug fixes only
+- Merge to main
 
 ---
 
 # Definition of Done
 
-- [ ] Accepts arbitrary text input
-- [ ] Produces structured persona
-- [ ] Distinguishes stated vs inferred content
-- [ ] Preserves conflicts
-- [ ] Surfaces gaps
-- [ ] Includes evidence
+- [ ] Accepts arbitrary customer notes
+- [ ] Produces a reusable B2B marketing persona
+- [ ] Identifies company and role context
+- [ ] Captures goals and challenges
+- [ ] Identifies buying triggers and objections
+- [ ] Identifies buying committee role when possible
 - [ ] Generates messaging guidance
-- [ ] Supports all three challenge inputs
-- [ ] Displays a visually structured persona card
+- [ ] Distinguishes stated vs inferred claims
+- [ ] Preserves conflicting evidence
+- [ ] Surfaces gaps
+- [ ] Supports all challenge inputs
+- [ ] Produces a visually structured persona card
 - [ ] Can be rerun repeatedly during the session
-- [ ] Runs from README instructions
+- [ ] Runs from documented setup instructions
 - [ ] Contains no secrets
 
 ---
 
 # Stretch Goals
 
-Only attempt after the main solution works.
+Only attempt these after the primary demo works.
 
-- Follow-up questions for missing data
+- ICP generation
+- Multi-persona comparison
+- Campaign brief generation
+- Content brief generation
 - Markdown export
 - PDF export
 - JSON export
-- Compare two personas
 - Editable inference review
 - Confidence dashboard
-- Multiple AI providers
+- Multiple model providers
 - Persona history
 
 ---
 
 # Golden Rule
 
-**If another feature is not ready, continue using fixtures and mocks instead of waiting.**
+**If another feature is unavailable, continue using mocks and fixtures instead of waiting.**
 
-The objective is maximum parallel development, minimum coordination overhead, and a working demo before the session ends.
+The objective is maximum parallel development, minimal coordination overhead, and a complete B2B marketing persona builder demo before the session ends.
