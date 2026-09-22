@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { InputPanel } from "../../components/Input";
-import { mockBuildPersona } from "../../components/Input/mocks/mockBuildPersona";
+import { buildPersona } from "../../agent";
 import { SAMPLE_INPUTS } from "../../components/Input/sampleInputs";
 import { validateNotes } from "../../components/Input/validateNotes";
 import type { PersonaResult, SampleId, SubmissionStatus } from "../../components/Input";
@@ -54,7 +54,7 @@ export default function Home() {
     try {
       // `notes` is passed exactly as stored — never trimmed or reformatted —
       // so the processing layer receives the user's input unchanged.
-      const data = await mockBuildPersona(notes, selectedSampleId);
+      const data = await buildPersona(notes);
       setResult(data);
       setStatus("success");
       console.log("Persona generated:", data);

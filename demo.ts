@@ -58,13 +58,7 @@ async function runDemo() {
     // Run extraction with local LLM (or mock fallback)
     const result = await buildPersona(demoInput);
 
-    // Determine which provider was used
-    const providerUsed = result.confidence.statedPercentage === 60 ? "LocalLLM" : "MockProvider";
-
-    console.log("✅ EXTRACTION COMPLETE\n");
-
-    // Show which provider was used
-    console.log(`Provider used: ${providerUsed}`);
+    console.log("\n✅ EXTRACTION COMPLETE\n");
     console.log(`Overall confidence: ${result.confidence.overall}`);
     console.log(
       `Coverage: ${result.confidence.statedPercentage}% stated, ` +

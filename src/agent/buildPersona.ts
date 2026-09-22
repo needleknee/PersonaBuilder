@@ -42,6 +42,7 @@ export async function buildPersona(
 
   // Step 2: Select provider
   const provider = resolveProvider(options);
+  console.log(`ℹ️  Using provider: ${provider.getName()}`);
 
   // Step 3: Build prompt
   const prompt = buildPrompt(rawInput);
