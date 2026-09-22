@@ -1,438 +1,270 @@
-/**
- * JSON Parser and Response Normalization
- * 
- * Handles LLM response parsing, cleanup, and schema validation.
- * Resilient to common LLM failure modes:
- * - JSON wrapped in markdown code fences
- * - Extra commentary before/after JSON
- * - Partial JSON responses
- * - Missing or null fields
- * - Wrong data types
- */
+import {
+  PersonaResultSchema,
+  type PersonaResult,
+} from "../schema/personaSchema";
 
-import { RawExtractionResponse, PersonaResult, PersonaFieldItem, Confidence } from "../types/persona";
+type Field = PersonaResult["persona"]["jobTitle"][number];
 
-/**
- * Parse LLM response and convert to structured PersonaResult
- * @param rawResponse Raw string from LLM
- * @returns Normalized PersonaResult
- */
-export function parseExtractedResponse(rawResponse: string): PersonaResult {
-  try {
-    // Step 1: Extract JSON from response (handle markdown, commentary, etc.)
-    const jsonString = extractJSON(rawResponse);
+const PERSONA_FIELDS = [
+  "jobTitle",
+  "department",
+  "companyType",
+  "companySize",
+  "goals",
+  "challenges",
+  "successMetrics",
+  "buyingTriggers",
+  "purchaseObjections",
+  "decisionMakingRole",
+  "preferredChannels",
+] as const;
 
-    // Step 2: Parse JSON
-    const parsed = JSON.parse(jsonString) as RawExtractionResponse;
+const MESSAGING_FIELDS = [
+  "valueProposition",
+  "keyMessages",
+  "proofPoints",
+  "contentIdeas",
+  "callToAction",
+] as const;
 
-    // Step 3: Normalize to schema
-    const normalized = normalizeResponse(parsed);
+export function parseExtractedResponse(
+  rawResponse: string
+): PersonaResult {
+  const parsed = JSON.parse(extractJson(rawResponse)) as Record<
+    string,
+    unknown
+  >;
 
-    return normalized;
-  } catch (error) {
-    console.error("Failed to parse extraction response:", error);
-    throw new Error(
-      `Failed to parse LLM response as valid persona JSON. Original error: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
-  }
+  return PersonaResultSchema.parse(normalizeResponse(parsed));
 }
 
-/**
- * Extract JSON from response that may contain markdown, commentary, etc.
- * Handles:
- * - ```json ... ``` code fences
- * - ```json ... ` trailing backtick only
- * - ```  ``` with other language identifiers
- * - Multiple JSON objects (takes first)
- * - Text before and after JSON
- */
-function extractJSON(text: string): string {
-  // Try markdown code fence first
-  const markdownMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (markdownMatch && markdownMatch[1]) {
-    const candidate = markdownMatch[1].trim();
-    if (isValidJSON(candidate)) {
-      return candidate;
-    }
+function extractJson(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+
+  if (fenced?.[1]) {
+    return fenced[1].trim();
   }
 
-  // Try finding JSON object by braces
-  let braceCount = 0;
-  let inString = false;
-  let escapeNext = false;
-  let startIdx = -1;
+  const firstBrace = text.indexOf("{");
+  const lastBrace = text.lastIndexOf("}");
 
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-
-    if (escapeNext) {
-      escapeNext = false;
-      continue;
-    }
-
-    if (char === "\\") {
-      escapeNext = true;
-      continue;
-    }
-
-    if (char === '"' && !escapeNext) {
-      inString = !inString;
-      continue;
-    }
-
-    if (!inString) {
-      if (char === "{") {
-        if (braceCount === 0) {
-          startIdx = i;
-        }
-        braceCount++;
-      } else if (char === "}") {
-        braceCount--;
-        if (braceCount === 0 && startIdx >= 0) {
-          const candidate = text.substring(startIdx, i + 1);
-          if (isValidJSON(candidate)) {
-            return candidate;
-          }
-        }
-      }
-    }
+  if (firstBrace === -1 || lastBrace === -1) {
+    throw new Error("No JSON object found in the model response.");
   }
 
-  throw new Error("No valid JSON found in response");
+  return text.slice(firstBrace, lastBrace + 1);
 }
 
-/**
- * Check if string is valid JSON
- */
-function isValidJSON(str: string): boolean {
-  try {
-    JSON.parse(str);
-    return true;
-  } catch {
-    return false;
-  }
-}
+function normalizeResponse(raw: Record<string, unknown>) {
+  const rawPersona = asRecord(raw.persona);
+  const rawMessaging = asRecord(raw.messaging);
 
-/**
- * Normalize raw extraction response to PersonaResult schema
- */
-function normalizeResponse(raw: RawExtractionResponse): PersonaResult {
+  const persona = Object.fromEntries(
+    PERSONA_FIELDS.map((field) => [
+      field,
+      normalizeFields(rawPersona[field]),
+    ])
+  );
+
+  const messaging = Object.fromEntries(
+    MESSAGING_FIELDS.map((field) => [
+      field,
+      normalizeFields(rawMessaging[field]),
+    ])
+  );
+
   return {
-    persona: {
-      profile: normalizeSection(raw.persona?.profile || {}, [
-        "archetype",
-        "jobTitle",
-        "department",
-        "companyType",
-        "companySize",
-        "decisionMakingRole",
-      ]),
-      context: normalizeSection(raw.persona?.context || {}, [
-        "goals",
-        "challenges",
-        "successMetrics",
-        "currentSituation",
-        "priorityDrivers",
-      ]),
-      buyingBehavior: normalizeSection(raw.persona?.buyingBehavior || {}, [
-        "buyingTriggers",
-        "purchaseObjections",
-        "buyingCycle",
-        "decisionCriteria",
-        "preferredChannels",
-        "informationSources",
-      ]),
-    },
-    messaging: normalizeSection(raw.messaging || {}, [
-      "valueProposition",
-      "keyMessages",
-      "proofPoints",
-      "contentIdeas",
-      "callToAction",
-      "toneAndStyle",
-      "messagesToAvoid",
-    ]),
+    persona,
+    messaging,
+    buyingCommittee: normalizeFields(raw.buyingCommittee),
+    funnelStage: normalizeFields(raw.funnelStage),
     gaps: normalizeGaps(raw.gaps),
     conflicts: normalizeConflicts(raw.conflicts),
-    summary: normalizeSummary(raw.summary),
-    extractedAt: new Date().toISOString(),
-    confidence: normalizeConfidence(raw),
+    summary: typeof raw.summary === "string" ? raw.summary.trim() : "",
   };
 }
 
-/**
- * Normalize a section (profile, context, messaging, etc.)
- */
-function normalizeSection(
-  section: Record<string, unknown>,
-  expectedFields: string[]
-): Record<string, PersonaFieldItem[]> {
-  const result: Record<string, PersonaFieldItem[]> = {};
+function normalizeFields(value: unknown): Field[] {
+  const items = Array.isArray(value) ? value : value ? [value] : [];
 
-  for (const field of expectedFields) {
-    const value = section[field];
-
-    if (Array.isArray(value)) {
-      result[field] = value
-        .filter((item) => item && typeof item === "object")
-        .map((item) => normalizeFieldItem(item as Record<string, unknown>));
-    } else if (value && typeof value === "object") {
-      result[field] = [normalizeFieldItem(value as Record<string, unknown>)];
-    } else {
-      // Missing field - create placeholder
-      result[field] = [
-        {
-          value: "Not specified in input",
-          status: "missing",
-          confidence: "high",
-        },
-      ];
-    }
-
-    // Ensure at least one item per field
-    if (result[field].length === 0) {
-      result[field] = [
-        {
-          value: "Not specified in input",
-          status: "missing",
-          confidence: "high",
-        },
-      ];
-    }
+  if (items.length === 0) {
+    return [missingField()];
   }
 
-  return result;
+  const normalized = items
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+    .map(normalizeField);
+
+  return normalized.length > 0 ? normalized : [missingField()];
 }
 
-/**
- * Normalize a single field item
- */
-function normalizeFieldItem(
-  item: Record<string, unknown>
-): PersonaFieldItem {
-  const value = String(item.value || "");
-  const status = normalizeStatus(item.status);
-  const confidence = normalizeConfidence(item);
+function normalizeField(raw: Record<string, unknown>): Field {
+  const status = normalizeStatus(raw.status);
+  const value = typeof raw.value === "string" ? raw.value.trim() : "";
+  const confidence = normalizeConfidence(raw.confidence);
+  const reasoning =
+    typeof raw.reasoning === "string" ? raw.reasoning.trim() : "";
 
-  const normalized: PersonaFieldItem = {
-    value: value.trim(),
-    status,
-    confidence,
-  };
-
-  // Add evidence if present and relevant
-  if (Array.isArray(item.evidence) && item.evidence.length > 0 && status === "stated") {
-    normalized.evidence = item.evidence
-      .filter((e): e is Record<string, unknown> => typeof e === "object" && e !== null)
-      .map((e) => ({
-        quote: String(e.quote || "").trim(),
-        source: e.source ? String(e.source) : "input",
-      }))
-      .filter((e) => e.quote.length > 0);
+  if (status === "missing") {
+    return missingField();
   }
 
-  // Add reasoning if present and relevant
-  if (typeof item.reasoning === "string" && item.reasoning.trim() && status === "inferred") {
-    normalized.reasoning = item.reasoning.trim();
-  }
+  if (status === "stated") {
+    const evidence = normalizeEvidence(raw.evidence);
 
-  return normalized;
-}
-
-/**
- * Normalize status field to valid enum
- */
-function normalizeStatus(value: unknown): "stated" | "inferred" | "missing" | "conflicting" {
-  const str = String(value).toLowerCase().trim();
-  const validStatuses = ["stated", "inferred", "missing", "conflicting"];
-
-  if (validStatuses.includes(str)) {
-    return str as "stated" | "inferred" | "missing" | "conflicting";
-  }
-
-  return "missing"; // Default to missing if unrecognized
-}
-
-/**
- * Normalize confidence field
- */
-function normalizeConfidence(
-  value: unknown
-): Confidence {
-  if (typeof value === "object" && value !== null && "confidence" in value) {
-    const conf = String((value as Record<string, unknown>).confidence).toLowerCase().trim();
-    if (["high", "medium", "low"].includes(conf)) {
-      return conf as Confidence;
-    }
-  }
-
-  const str = String(value).toLowerCase().trim();
-  if (["high", "medium", "low"].includes(str)) {
-    return str as Confidence;
-  }
-
-  return "medium"; // Default
-}
-
-/**
- * Normalize gaps array
- */
-function normalizeGaps(
-  gaps: unknown
-): Array<{ field: string; reason: string }> {
-  if (!Array.isArray(gaps)) {
-    return [];
-  }
-
-  return gaps
-    .filter((gap): gap is Record<string, unknown> => typeof gap === "object" && gap !== null)
-    .map((gap) => ({
-      field: String(gap.field || "unknown"),
-      reason: String(gap.reason || "Information not provided in input"),
-    }))
-    .filter((gap) => gap.field.length > 0);
-}
-
-/**
- * Normalize conflicts array
- */
-function normalizeConflicts(
-  conflicts: unknown
-): Array<{
-  field: string;
-  competingClaims: Array<{
-    value: string;
-    source?: string;
-    evidence?: Array<{ quote: string; source?: string }>;
-  }>;
-}> {
-  if (!Array.isArray(conflicts)) {
-    return [];
-  }
-
-  return conflicts
-    .filter((conf): conf is Record<string, unknown> => typeof conf === "object" && conf !== null)
-    .map((conf) => {
-      const competingClaims = Array.isArray(conf.competingClaims)
-        ? conf.competingClaims
-            .filter((claim): claim is Record<string, unknown> => typeof claim === "object" && claim !== null)
-            .map((claim) => ({
-              value: String(claim.value || ""),
-              source: claim.source ? String(claim.source) : undefined,
-              evidence: Array.isArray(claim.evidence)
-                ? claim.evidence
-                    .filter((e): e is Record<string, unknown> => typeof e === "object" && e !== null)
-                    .map((e) => ({
-                      quote: String(e.quote || ""),
-                      source: e.source ? String(e.source) : undefined,
-                    }))
-                    .filter((e) => e.quote.length > 0)
-                : undefined,
-            }))
-            .filter((claim) => claim.value.length > 0)
-        : [];
-
+    if (evidence.length === 0) {
       return {
-        field: String(conf.field || "unknown"),
-        competingClaims,
+        value,
+        status: "inferred",
+        confidence: "low",
+        reasoning:
+          "The model marked this as stated but did not provide a supporting quote.",
       };
-    })
-    .filter((conf) => conf.field.length > 0 && conf.competingClaims.length > 0);
-}
-
-/**
- * Normalize summary text
- */
-function normalizeSummary(summary: unknown): string {
-  if (typeof summary === "string") {
-    return summary.trim().slice(0, 1000); // Cap at 1000 chars
-  }
-  return "";
-}
-
-/**
- * Calculate confidence percentages
- */
-function normalizeConfidenceMetrics(raw: RawExtractionResponse): {
-  overall: Confidence;
-  statedPercentage: number;
-  inferredPercentage: number;
-  missingPercentage: number;
-} {
-  // If provided, use them
-  if (raw.confidence && typeof raw.confidence === "object") {
-    const conf = raw.confidence as Record<string, unknown>;
-    const overall = normalizeConfidence(conf.overall || "medium");
-    const stated = Number(conf.statedPercentage) || 0;
-    const inferred = Number(conf.inferredPercentage) || 0;
-    const missing = Number(conf.missingPercentage) || 0;
-
-    // Validate percentages
-    const total = stated + inferred + missing;
-    if (total === 100 && stated >= 0 && inferred >= 0 && missing >= 0) {
-      return { overall, statedPercentage: stated, inferredPercentage: inferred, missingPercentage: missing };
     }
-  }
 
-  // Calculate from persona items
-  let statedCount = 0;
-  let inferredCount = 0;
-  let missingCount = 0;
-  let total = 0;
-
-  const countField = (field: unknown) => {
-    if (Array.isArray(field)) {
-      for (const item of field) {
-        if (item && typeof item === "object") {
-          const status = (item as Record<string, unknown>).status;
-          if (status === "stated") statedCount++;
-          else if (status === "inferred") inferredCount++;
-          else if (status === "missing") missingCount++;
-          total++;
-        }
-      }
-    }
-  };
-
-  // Count all persona fields
-  if (raw.persona?.profile) {
-    for (const field of Object.values(raw.persona.profile)) {
-      countField(field);
-    }
-  }
-  if (raw.persona?.context) {
-    for (const field of Object.values(raw.persona.context)) {
-      countField(field);
-    }
-  }
-  if (raw.persona?.buyingBehavior) {
-    for (const field of Object.values(raw.persona.buyingBehavior)) {
-      countField(field);
-    }
-  }
-
-  if (total === 0) {
     return {
-      overall: "medium",
-      statedPercentage: 33,
-      inferredPercentage: 33,
-      missingPercentage: 34,
+      value,
+      status: "stated",
+      confidence,
+      evidence,
     };
   }
 
-  const statedPercentage = Math.round((statedCount / total) * 100);
-  const inferredPercentage = Math.round((inferredCount / total) * 100);
-  const missingPercentage = 100 - statedPercentage - inferredPercentage;
+  if (status === "inferred") {
+    if (!value || !reasoning) {
+      return missingField();
+    }
 
-  // Determine overall confidence
-  let overall: Confidence = "medium";
-  if (statedPercentage >= 60) {
-    overall = "high";
-  } else if (statedPercentage <= 20) {
-    overall = "low";
+    return {
+      value,
+      status: "inferred",
+      confidence,
+      reasoning,
+    };
   }
 
-  return { overall, statedPercentage, inferredPercentage, missingPercentage };
+  return {
+    value,
+    status: "conflicting",
+    confidence: "low",
+  };
+}
+
+function missingField(): Field {
+  return {
+    value: "",
+    status: "missing",
+    confidence: "low",
+  };
+}
+
+function normalizeStatus(
+  value: unknown
+): Field["status"] {
+  if (
+    value === "stated" ||
+    value === "inferred" ||
+    value === "missing" ||
+    value === "conflicting"
+  ) {
+    return value;
+  }
+
+  return "missing";
+}
+
+function normalizeConfidence(
+  value: unknown
+): Field["confidence"] {
+  if (value === "high" || value === "medium" || value === "low") {
+    return value;
+  }
+
+  return "low";
+}
+
+function normalizeEvidence(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+    const quote =
+      typeof record.quote === "string" ? record.quote.trim() : "";
+    const source =
+      typeof record.source === "string" ? record.source.trim() : "input";
+
+    return quote ? [{ quote, source }] : [];
+  });
+}
+
+function normalizeGaps(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+    const field =
+      typeof record.field === "string" ? record.field.trim() : "";
+    const reason =
+      typeof record.reason === "string"
+        ? record.reason.trim()
+        : "Not present in the provided notes.";
+
+    return field ? [{ field, reason }] : [];
+  });
+}
+
+function normalizeConflicts(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const record = item as Record<string, unknown>;
+    const field =
+      typeof record.field === "string" ? record.field.trim() : "";
+
+    const competingClaims = Array.isArray(record.competingClaims)
+      ? record.competingClaims.flatMap((claim) => {
+          if (!claim || typeof claim !== "object") {
+            return [];
+          }
+
+          const item = claim as Record<string, unknown>;
+          const value =
+            typeof item.value === "string" ? item.value.trim() : "";
+          const source =
+            typeof item.source === "string"
+              ? item.source.trim()
+              : "input";
+
+          return value ? [{ value, source }] : [];
+        })
+      : [];
+
+    return field && competingClaims.length >= 2
+      ? [{ field, competingClaims }]
+      : [];
+  });
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
 }
