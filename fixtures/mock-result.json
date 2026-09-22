@@ -1,0 +1,37 @@
+{
+  "persona": {
+    "jobTitle": [
+      {
+        "value": "Marketing Manager",
+        "status": "stated",
+        "confidence": "high",
+        "evidence": [
+          {
+            "quote": "We sell to marketing managers",
+            "source": "input"
+          }
+        ]
+      }
+    ],
+    "department": [],
+    "companyType": [],
+    "companySize": [],
+    "goals": [],
+    "challenges": [],
+    "successMetrics": [],
+    "buyingTriggers": [],
+    "purchaseObjections": [],
+    "decisionMakingRole": [],
+    "preferredChannels": []
+  },
+  "messaging": {
+    "valueProposition": [],
+    "keyMessages": [],
+    "proofPoints": [],
+    "contentIdeas": [],
+    "callToAction": []
+  },
+  "gaps": [],
+  "conflicts": [],
+  "summary": "Mock persona"
+}
