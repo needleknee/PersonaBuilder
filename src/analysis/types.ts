@@ -1,6 +1,6 @@
 
 /**
- * Temporary analysis contract based on plan.md.
+ * Temporary analysis contract, based on plan.md.
  *
  * Keep analysis files importing from "./types".
  * When Person 4's schema is merged, replace these definitions
