@@ -1,0 +1,72 @@
+{
+  "summary": "Busy, budget-conscious marketing managers at mid-size SaaS companies who avoid long sales processes. Most of their buying context is not in the notes yet.",
+  "persona": {
+    "jobTitle": [
+      { "value": "Marketing Manager", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "We mostly sell to marketing managers", "source": "Input notes" }] }
+    ],
+    "department": [
+      { "value": "Marketing", "status": "inferred", "confidence": "high",
+        "reasoning": "The job title is marketing manager.",
+        "evidence": [{ "quote": "marketing managers", "source": "Input notes" }] }
+    ],
+    "companyType": [
+      { "value": "SaaS", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "mid-size SaaS companies", "source": "Input notes" }] }
+    ],
+    "companySize": [
+      { "value": "Mid-size", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "mid-size SaaS companies", "source": "Input notes" }] }
+    ],
+    "goals": [
+      { "value": "Get results without a large time investment", "status": "inferred", "confidence": "low",
+        "reasoning": "The notes describe them as busy; no goal is stated directly." }
+    ],
+    "challenges": [
+      { "value": "Limited time", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "They're busy", "source": "Input notes" }] },
+      { "value": "Budget constraints", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "don't have big budgets", "source": "Input notes" }] }
+    ],
+    "successMetrics": [],
+    "buyingTriggers": [],
+    "purchaseObjections": [
+      { "value": "Long sales calls", "status": "stated", "confidence": "high",
+        "evidence": [{ "quote": "hate long sales calls", "source": "Input notes" }] }
+    ],
+    "decisionMakingRole": [
+      { "value": "", "status": "missing", "confidence": "low" }
+    ],
+    "preferredChannels": [
+      { "value": "Short, self-serve formats such as quick demos", "status": "inferred", "confidence": "low",
+        "reasoning": "They dislike long sales calls, so low-touch channels are likely preferred.",
+        "evidence": [{ "quote": "hate long sales calls", "source": "Input notes" }] }
+    ]
+  },
+  "messaging": {
+    "valueProposition": [
+      { "value": "Get value quickly without a long sales process or a big budget.", "status": "inferred", "confidence": "medium",
+        "reasoning": "Directly addresses the three stated pain points: time, budget and long calls." }
+    ],
+    "keyMessages": [
+      { "value": "Set up in minutes, not weeks.", "status": "inferred", "confidence": "medium", "reasoning": "Speaks to limited time." },
+      { "value": "Pricing that fits a mid-size marketing budget.", "status": "inferred", "confidence": "medium", "reasoning": "Speaks to budget constraints." }
+    ],
+    "proofPoints": [],
+    "contentIdeas": [
+      { "value": "Two-minute product walkthrough video", "status": "inferred", "confidence": "low",
+        "reasoning": "A short, self-serve format suits a busy buyer who avoids sales calls." }
+    ],
+    "callToAction": [
+      { "value": "Start a free trial", "status": "inferred", "confidence": "low",
+        "reasoning": "Lets them evaluate without a sales call." }
+    ]
+  },
+  "gaps": [
+    { "field": "decisionMakingRole", "reason": "The notes don't say whether they decide, influence or need approval." },
+    { "field": "successMetrics", "reason": "No measure of success is mentioned." },
+    { "field": "buyingTriggers", "reason": "Nothing in the notes explains what makes them start looking for a tool." },
+    { "field": "proofPoints", "reason": "No customer results or data were provided to back the messaging." }
+  ],
+  "conflicts": []
+}

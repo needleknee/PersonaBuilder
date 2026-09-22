@@ -1,0 +1,60 @@
+{
+  "summary": "Sales and Growth describe two different ideal customers. Agree on the target segment before building messaging.",
+  "persona": {
+    "jobTitle": [],
+    "department": [
+      { "value": "Marketing", "status": "stated", "confidence": "high",
+        "evidence": [
+          { "quote": "enterprise marketing organization", "source": "Sales" },
+          { "quote": "a lean marketing team", "source": "Growth" }
+        ] }
+    ],
+    "companyType": [],
+    "companySize": [
+      { "value": "Enterprise with multiple regional teams", "status": "conflicting", "confidence": "low",
+        "evidence": [{ "quote": "an enterprise marketing organization with a formal procurement process and multiple regional teams", "source": "Sales" }] },
+      { "value": "Small or mid-size business", "status": "conflicting", "confidence": "low",
+        "evidence": [{ "quote": "a small or mid-size business with a lean marketing team", "source": "Growth" }] }
+    ],
+    "goals": [],
+    "challenges": [],
+    "successMetrics": [],
+    "buyingTriggers": [],
+    "purchaseObjections": [],
+    "decisionMakingRole": [
+      { "value": "Formal procurement, multiple stakeholders", "status": "conflicting", "confidence": "low",
+        "evidence": [{ "quote": "a formal procurement process", "source": "Sales" }] },
+      { "value": "Team buys and adopts tools on its own", "status": "conflicting", "confidence": "low",
+        "evidence": [{ "quote": "can buy and adopt tools quickly", "source": "Growth" }] }
+    ],
+    "preferredChannels": []
+  },
+  "messaging": {
+    "valueProposition": [
+      { "value": "", "status": "missing", "confidence": "low",
+        "reasoning": "Depends on which segment the team targets." }
+    ],
+    "keyMessages": [],
+    "proofPoints": [],
+    "contentIdeas": [],
+    "callToAction": []
+  },
+  "buyingCommittee": [
+    { "value": "Unclear: procurement-led (Sales) or team-led (Growth)", "status": "conflicting", "confidence": "low" }
+  ],
+  "gaps": [
+    { "field": "jobTitle", "reason": "Neither note names a role." },
+    { "field": "goals", "reason": "Neither note describes what the customer wants to achieve." },
+    { "field": "challenges", "reason": "No pain points are mentioned." }
+  ],
+  "conflicts": [
+    { "field": "companySize", "competingClaims": [
+      { "value": "Enterprise marketing organization with multiple regional teams", "source": "Sales" },
+      { "value": "Small or mid-size business with a lean marketing team", "source": "Growth" }
+    ] },
+    { "field": "decisionMakingRole", "competingClaims": [
+      { "value": "Formal procurement process", "source": "Sales" },
+      { "value": "Can buy and adopt tools quickly", "source": "Growth" }
+    ] }
+  ]
+}
