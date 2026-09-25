@@ -56,6 +56,14 @@ The application follows a clear pipeline designed for reliability and observabil
 *   [**Setup & Configuration**](docs/LOCAL_LLM_SETUP.md): Instructions for configuring LLM providers and environment variables.
 *   [**Testing Suite**](docs/TEST_INPUTS.md): Details on sample inputs used for validation and testing.
 
+## 🤝 Contributors
+
+This project was born from a collaborative "vibe coding" session. Although hosted on a personal account, it was a collective effort from the entire team:
+
+*   [@ottos0308](https://github.com/ottos0308)
+*   [@desiana](https://github.com/desiana)
+*   [@nadezda-lebedeva](https://github.com/nadezda-lebedeva)
+*   Loan Cindy Tran
 ## 🛠 Tech Stack
 
 *   **Frontend**: React, TypeScript, Vite
