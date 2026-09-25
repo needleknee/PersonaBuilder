@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { InputPanel } from "../../components/Input";
-import { buildPersona } from "../../agent";
+
 import { SAMPLE_INPUTS } from "../../components/Input/sampleInputs";
 import { validateNotes } from "../../components/Input/validateNotes";
 import type { PersonaResult, SampleId, SubmissionStatus } from "../../components/Input";
@@ -54,7 +54,17 @@ export default function Home() {
     try {
       // `notes` is passed exactly as stored — never trimmed or reformatted —
       // so the processing layer receives the user's input unchanged.
-      const data = await buildPersona(notes);
+      const response = await fetch("/api/build-persona", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
       setResult(data);
       setStatus("success");
       console.log("Persona generated:", data);
