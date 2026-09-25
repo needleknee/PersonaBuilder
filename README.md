@@ -53,7 +53,7 @@ The application follows a clear pipeline designed for reliability and observabil
 ## 📚 Documentation
 
 *   [**Developer Guide**](docs/EXTRACTION.md): Deep dive into the `buildPersona` API, schema definitions, and status classifications.
-*   [**Setup & Configuration**](docs/LOCAL_LLM_SETUP.md): Instructions for configuring LLM providers and environment variables.
+*   [**Setup & Configuration**](docs/LOCAL_LLM_SETUP.md): Instructions for configuring LLM providers (Local vs Cloud) and environment variables.
 *   [**Testing Suite**](docs/TEST_INPUTS.md): Details on sample inputs used for validation and testing.
 
 ## 🤝 Contributors
